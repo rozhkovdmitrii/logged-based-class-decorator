@@ -1,0 +1,8 @@
+{
+  "format": null,
+  "colored": true,
+  "groups": {
+    "log_group": "DEBUG",
+    "other_log_group": "DEBUG"
+  }
+}

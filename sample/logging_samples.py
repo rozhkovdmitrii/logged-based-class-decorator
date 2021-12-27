@@ -1,57 +1,3 @@
-# Logged based class
-
-This distributed library distinct to be used in
-
-## Build package
-
-To build package `dist/logged-based-class-1.0.tar.gz`, for example, use following command:
-
-```
-python setup.py sdist
-```
-
-## Installation 
-
-Then you can install package with the following:
-
-```
-pip install logged-based-class-1.0.tar.gz
-```
-
-## Config file
-
-There should be `log_cfg.json` in where you use `logged_based_class`. It can look like:
-
-```json
-{
-  "format": null,
-  "colored": true,
-  "groups": {
-    "log_group": "DEBUG",
-    "other_log_group": "DEBUG"
-  }
-}
-```
-
-### Format
-
-You can replace format string with your own. There also support extra logging attributes in addition to [standard ones](https://docs.python.org/3/library/logging.html#logrecord-attributes)
-* class
-* class_id
-
-##### For example:
-
-```
-{
-  "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(class)15s:%(class_id)-8s %(message)s",
-  "colored": true,
-  ...
-```
-
-
-## Using example
-
-```python
 import threading
 
 from logged_based_class import logged_based
@@ -106,4 +52,6 @@ if __name__ == "__main__":
     a2.do_stuff(100)
     a2.do_stuff(101)
     a2.do_stuff(1001)
-```
+
+
+
