@@ -90,7 +90,7 @@ def logged_based(logged_group: str):
         log_mng.init_from_file()
 
     if logged_group not in log_mng.log_cfg.groups:
-        logger = logging.getLogger()
+        logger = logging.getLogger(logged_group)
         logger.setLevel(logging.CRITICAL)
 
     def wrapper(original_class):
