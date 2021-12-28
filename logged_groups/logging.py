@@ -12,6 +12,7 @@ class LogConfig:
     groups: Dict[str, int] = field(default_factory=dict)
     format: str = "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(class)15s:%(class_id)-8s %(message)s"
     colored: bool = False
+    propagate: bool = False
 
 
 class _ColoredFormatter(logging.Formatter):
@@ -54,18 +55,20 @@ class LogMng:
     def _init_from_file_impl(self, log_cfg: str):
         with open(log_cfg) as cfg_opened:
             cfg: Dict[str, Any] = json.load(cfg_opened)
-            colored: bool = cfg.get("colored")
-            if colored is not None:
-                self.log_cfg.colored = colored
+
             fmt_str: str = cfg.get("format")
             if fmt_str is not None:
                 self.log_cfg.format = fmt_str
 
-            groups: Dict[str, Any] = cfg.get("groups")
+            groups: Dict[str, Any] = cfg.get("logged_groups")
             levels = {"DEBUG": logging.DEBUG, "INFO": logging.INFO, "WARNING": logging.WARNING, "ERROR": logging.ERROR,
                       "CRITICAL": logging.CRITICAL, }
             for group, level in groups.items():
                 self.log_cfg.groups[group] = levels[level]
+
+            self.log_cfg.propagate = cfg.get("propagate", False)
+            self.log_cfg.colored = cfg.get("colored", False)
+
         self.is_init = True
 
     def init_logged_groups(self) -> NoReturn:
@@ -81,16 +84,17 @@ class LogMng:
         logger = logging.getLogger(logged_group)
         logger.setLevel(log_level)
         logger.addHandler(handler)
+        logger.propagate = self.log_cfg.propagate
 
 
-def logged_based(logged_group: str):
+def logged_group(log_group: str):
     """Designed to provide methods: debug, info, warning, error and critical inside decorated class in logger_group"""
     log_mng = LogMng()
     if not log_mng.is_init:
         log_mng.init_from_file()
 
-    if logged_group not in log_mng.log_cfg.groups:
-        logger = logging.getLogger(logged_group)
+    if log_group not in log_mng.log_cfg.groups:
+        logger = logging.getLogger(log_group)
         logger.setLevel(logging.CRITICAL)
 
     def wrapper(original_class):
@@ -98,7 +102,7 @@ def logged_based(logged_group: str):
 
         def __init__(self, *args, **kws):
             self._class_id = kws.get("class_id", "")
-            logger = logging.LoggerAdapter(logging.getLogger(logged_group),
+            logger = logging.LoggerAdapter(logging.getLogger(log_group),
                                            {"class": original_class.__name__, "class_id": self._class_id})
             self.debug = logger.debug
             self.info = logger.info

@@ -1,7 +1,7 @@
 {
   "format": null,
   "colored": true,
-  "groups": {
+  "logged_groups": {
     "log_group": "DEBUG",
     "other_log_group": "DEBUG"
   }

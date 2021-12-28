@@ -26,7 +26,7 @@ There should be `log_cfg.json` in where you use `logged_based_class`. It can loo
 {
   "format": null,
   "colored": true,
-  "groups": {
+  "logged_groups": {
     "log_group": "DEBUG",
     "other_log_group": "DEBUG"
   }
@@ -54,10 +54,10 @@ You can replace format string with your own. There also support extra logging at
 ```python
 import threading
 
-from logged_based_class import logged_based
+from logged_groups import logged_group
 
 
-@logged_based("log_group")
+@logged_group("log_group")
 class A:
 
     def __init__(self, **kws):
@@ -78,7 +78,7 @@ class A:
             self.warning(f"Value higher than 100, it can be wrong: {value}")
 
 
-@logged_based("other_log_group")
+@logged_group("other_log_group")
 class B:
 
     def __init__(self):
@@ -93,7 +93,6 @@ class B:
 
 
 if __name__ == "__main__":
-
     threading.current_thread().name = "main"
     a1 = A(class_id="1")
     a1.do_stuff(100)
