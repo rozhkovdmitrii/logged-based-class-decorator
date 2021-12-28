@@ -33,20 +33,33 @@ There should be `log_cfg.json` in where you use `logged_based_class`. It can loo
 }
 ```
 
-### Format
+##### format
 
 You can replace format string with your own. There also support extra logging attributes in addition to [standard ones](https://docs.python.org/3/library/logging.html#logrecord-attributes)
-* class
-* class_id
 
-##### For example:
+  * class - decorated with `logged_group` class name
+  * class_id - class id set by `class_id` argument passed into constructor
 
 ```
 {
   "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(class)15s:%(class_id)-8s %(message)s",
   "colored": true,
   ...
+}
 ```
+
+##### colored
+
+Optional. Default - `false`. If set output well be colored
+
+##### propagation
+
+Optional. Default - `false`. If set log messages will be propagated into parent logger if that are exists
+
+##### logged_groups
+
+Each pair in this dict is definition of logging group and level related to it.
+So it gets possible to reduce logging level for classes related to this group and decorated with `@logged_group` in appropriate way in sources
 
 
 ## Using example
