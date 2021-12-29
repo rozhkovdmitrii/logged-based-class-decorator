@@ -1,4 +1,4 @@
-# Logged based class
+# Python logged groups
 
 This distributed library distinct to be used in
 

@@ -38,6 +38,11 @@ class B:
         self.debug("Spam spam spam spam spam ")
 
 
+@logged_group("log_group")
+def check_logger():
+    logger.info("Hoooray it's working!!!")
+
+
 if __name__ == "__main__":
     threading.current_thread().name = "main"
     a1 = A(class_id="1")
@@ -51,3 +56,6 @@ if __name__ == "__main__":
     a2.do_stuff(100)
     a2.do_stuff(101)
     a2.do_stuff(1001)
+
+    check_logger()
+

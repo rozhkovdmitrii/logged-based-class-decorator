@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 import logging
 import sys
 from typing import NoReturn, Dict, Any
+from types import FunctionType
 
 import singleton_decorator
 
@@ -87,22 +88,22 @@ class LogMng:
         logger.propagate = self.log_cfg.propagate
 
 
-def logged_group(log_group: str):
+def logged_group(logged_group: str):
     """Designed to provide methods: debug, info, warning, error and critical inside decorated class in logger_group"""
     log_mng = LogMng()
     if not log_mng.is_init:
         log_mng.init_from_file()
 
-    if log_group not in log_mng.log_cfg.groups:
-        logger = logging.getLogger(log_group)
+    if logged_group not in log_mng.log_cfg.groups:
+        logger = logging.getLogger(logged_group)
         logger.setLevel(logging.CRITICAL)
 
-    def wrapper(original_class):
+    def class_wrapper(original_class):
         orig_init = original_class.__init__
 
         def __init__(self, *args, **kws):
             self._class_id = kws.get("class_id", "")
-            logger = logging.LoggerAdapter(logging.getLogger(log_group),
+            logger = logging.LoggerAdapter(logging.getLogger(logged_group),
                                            {"class": original_class.__name__, "class_id": self._class_id})
             self.debug = logger.debug
             self.info = logger.info
@@ -114,4 +115,14 @@ def logged_group(log_group: str):
 
         original_class.__init__ = __init__
         return original_class
+
+    def function_wrapper(original_function):
+        logger = logging.LoggerAdapter(logging.getLogger(logged_group),
+                                       {"class": original_function.__name__, "class_id": ""})
+        original_function.__globals__.update({"logger": logger})
+        return original_function
+
+    def wrapper(entity):
+        return function_wrapper(entity) if isinstance(entity, FunctionType) else class_wrapper(entity)
+
     return wrapper
