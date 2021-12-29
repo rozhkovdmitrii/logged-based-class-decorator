@@ -119,8 +119,12 @@ def logged_group(logged_group: str):
     def function_wrapper(original_function):
         logger = logging.LoggerAdapter(logging.getLogger(logged_group),
                                        {"class": original_function.__name__, "class_id": ""})
-        original_function.__globals__.update({"logger": logger})
-        return original_function
+
+        def inner_wrapper(*args, **kwargs):
+            kwargs.update({"logger": logger})
+            return original_function(*args, **kwargs)
+
+        return inner_wrapper
 
     def wrapper(entity):
         return function_wrapper(entity) if isinstance(entity, FunctionType) else class_wrapper(entity)

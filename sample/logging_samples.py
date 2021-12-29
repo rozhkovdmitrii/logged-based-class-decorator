@@ -39,7 +39,7 @@ class B:
 
 
 @logged_group("log_group")
-def check_logger():
+def check_logger(*, logger):
     logger.info("Hoooray it's working!!!")
 
 
