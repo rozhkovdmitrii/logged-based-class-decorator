@@ -1,6 +1,9 @@
 # Python logged groups
 
-This distributed library distinct to be used in
+This package designed to facilitate logging inside classes and functions with `@logged_group` decorator and also makes it possible
+to manage logging level and any different things for any logging domain mentioned in log_cfg.json
+
+This package maintained on [python-logged-groups github repsitory](https://github.com/rozhkovdmitrii/python-logged-groups) by rozhkovdmitrii<rozhkovdmitrii@yandex.ru> 
 
 ## Build package
 

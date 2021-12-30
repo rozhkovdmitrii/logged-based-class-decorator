@@ -8,6 +8,7 @@ class A:
 
     def __init__(self, **kws):
         self.info("Some information, keep focused on it")
+        self.c = C(class_id="SingleC")
 
     def do_stuff(self, value: int):
         try:
@@ -22,6 +23,14 @@ class A:
 
         if value > 100:
             self.warning(f"Value higher than 100, it can be wrong: {value}")
+
+
+@logged_group("log_group")
+class C:
+
+    def __init__(self, **kws):
+        self.info("C class construtor")
+
 
 
 @logged_group("other_log_group")
