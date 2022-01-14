@@ -1,25 +1,15 @@
 import json
-from dataclasses import dataclass, field
 import logging
-import sys
-from typing import NoReturn, Dict, Any
+import logging.config
 from types import FunctionType
 
 import singleton_decorator
 
 
-@dataclass
-class LogConfig:
-    groups: Dict[str, int] = field(default_factory=dict)
-    format: str = "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(class)15s:%(class_id)-8s %(message)s"
-    colored: bool = False
-    propagate: bool = False
-
-
-class _ColoredFormatter(logging.Formatter):
+class ColoredFormatter(logging.Formatter):
     """Logging Formatter to add colors and count warning / errors"""
 
-    def __init__(self, fmt_str: str):
+    def __init__(self, fmt_str: str, *args, **kwargs):
         super().__init__()
         green = "\x1b[32m"
         grey = "\x1b[38m"
@@ -46,46 +36,21 @@ class _ColoredFormatter(logging.Formatter):
 class LogMng:
 
     def __init__(self):
-        self.log_cfg = LogConfig()
         self.is_init: bool = False
 
     def init_from_file(self, log_cfg: str = "log_cfg.json"):
-        self._init_from_file_impl(log_cfg)
-        self.init_logged_groups()
+        try:
+            self._init_from_file_impl(log_cfg)
+        except FileNotFoundError:
+            logging.getLogger().error(f"Failed to configure logged_groups package, file not found: {log_cfg}")
+        except json.JSONDecodeError as e:
+            logging.getLogger().error(f"Failed decode logged_groups package from {log_cfg}, error: {e}")
 
     def _init_from_file_impl(self, log_cfg: str):
-        with open(log_cfg) as cfg_opened:
-            cfg: Dict[str, Any] = json.load(cfg_opened)
-
-            fmt_str: str = cfg.get("format")
-            if fmt_str is not None:
-                self.log_cfg.format = fmt_str
-
-            groups: Dict[str, Any] = cfg.get("logged_groups")
-            levels = {"DEBUG": logging.DEBUG, "INFO": logging.INFO, "WARNING": logging.WARNING, "ERROR": logging.ERROR,
-                      "CRITICAL": logging.CRITICAL, }
-            for group, level in groups.items():
-                self.log_cfg.groups[group] = levels[level]
-
-            self.log_cfg.propagate = cfg.get("propagate", False)
-            self.log_cfg.colored = cfg.get("colored", False)
-
+        with open(log_cfg) as log_cfg_file:
+            log_cfg_data = json.load(log_cfg_file)
+            logging.config.dictConfig(log_cfg_data)
         self.is_init = True
-
-    def init_logged_groups(self) -> NoReturn:
-        for logged_group, log_level in self.log_cfg.groups.items():
-            self._init_logger(logged_group, log_level)
-
-    def _init_logger(self, logged_group, log_level):
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setLevel(logging.DEBUG)
-        fmt_str = self.log_cfg.format
-        formatter = _ColoredFormatter(fmt_str) if self.log_cfg.colored else logging.Formatter(fmt=fmt_str)
-        handler.setFormatter(formatter)
-        logger = logging.getLogger(logged_group)
-        logger.setLevel(log_level)
-        logger.addHandler(handler)
-        logger.propagate = self.log_cfg.propagate
 
 
 def logged_group(logged_group: str):
@@ -94,8 +59,8 @@ def logged_group(logged_group: str):
     if not log_mng.is_init:
         log_mng.init_from_file()
 
-    if logged_group not in log_mng.log_cfg.groups:
-        logger = logging.getLogger(logged_group)
+    logger = logging.getLogger(logged_group)
+    if len(logger.handlers) == 0:
         logger.setLevel(logging.CRITICAL)
 
     def class_wrapper(original_class):
@@ -103,13 +68,13 @@ def logged_group(logged_group: str):
 
         def __init__(self, *args, **kws):
             self._class_id = kws.get("class_id", "")
-            logger = logging.LoggerAdapter(logging.getLogger(logged_group),
-                                           {"class": original_class.__name__, "class_id": self._class_id})
-            self.debug = logger.debug
-            self.info = logger.info
-            self.error = logger.error
-            self.critical = logger.critical
-            self.warning = logger.warning
+            self._logger = logging.LoggerAdapter(logger,
+                                                 {"class": original_class.__name__, "class_id": self._class_id})
+            self.debug = self._logger.debug
+            self.info = self._logger.info
+            self.error = self._logger.error
+            self.critical = self._logger.critical
+            self.warning = self._logger.warning
 
             orig_init(self, *args, **kws)
 
@@ -117,11 +82,11 @@ def logged_group(logged_group: str):
         return original_class
 
     def function_wrapper(original_function):
-        logger = logging.LoggerAdapter(logging.getLogger(logged_group),
-                                       {"class": original_function.__name__, "class_id": ""})
+        _logger = logging.LoggerAdapter(logging.getLogger(logged_group),
+                                        {"class": original_function.__name__, "class_id": ""})
 
         def inner_wrapper(*args, **kwargs):
-            kwargs.update({"logger": logger})
+            kwargs.update({"logger": _logger})
             return original_function(*args, **kwargs)
 
         return inner_wrapper

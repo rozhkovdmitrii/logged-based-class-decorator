@@ -1,5 +1,3 @@
-import threading
-
 from logged_groups import logged_group
 
 
@@ -32,19 +30,11 @@ class C:
         self.info("C class construtor")
 
 
-
 @logged_group("other_log_group")
 class B:
-
     def __init__(self):
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.error("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
+        for i in range(0, 10):
+            self.debug("Spam spam spam spam spam ")
 
 
 @logged_group("log_group")
@@ -53,7 +43,6 @@ def check_logger(*, logger):
 
 
 if __name__ == "__main__":
-    threading.current_thread().name = "main"
     a1 = A(class_id="1")
     a1.do_stuff(100)
     a1.do_stuff(101)

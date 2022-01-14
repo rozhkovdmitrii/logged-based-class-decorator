@@ -7,7 +7,7 @@ This package maintained on [python-logged-groups github repsitory](https://githu
 
 ## Build package
 
-To build package `dist/logged-based-class-1.0.tar.gz`, for example, use following command:
+To build package `dist/logged-groups-2.0.1.tar.gz`, for example, use following command:
 
 ```
 python setup.py sdist
@@ -18,58 +18,49 @@ python setup.py sdist
 Then you can install package with the following:
 
 ```
-pip install logged-based-class-1.0.tar.gz
+pip install dist/logged-groups-2.0.1.tar.gz
 ```
 
 ## Config file
 
-There should be `log_cfg.json` in where you use `logged_based_class`. It can look like:
+There should be `log_cfg.json` in where you use `logged_groups` package. It's actually [standard configuration](https://docs.python.org/3/library/logging.config.html#configuration-functions) to be used with `logging.config.dictConfig`:
+As you can see there is using `logged_groups.ColoredFormatter` to provide colored output
 
 ```json
 {
-  "format": null,
-  "colored": true,
-  "logged_groups": {
-    "log_group": "DEBUG",
-    "other_log_group": "DEBUG"
-  }
+    "version": 1,
+    "handlers": {
+        "colored": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "colored"
+        }
+    },
+    "formatters": {
+        "colored": {
+            "class": "logged_groups.ColoredFormatter",
+            "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(class)30s:%(class_id)-8s %(message)s",
+            "style": "%"
+        }
+    },
+    "loggers": {
+        "log_group": {
+            "level": "WARNING",
+            "handlers": ["colored"],
+            "propagate": false
+        },
+        "other_log_group": {
+            "level": "CRITICAL",
+            "handlers": ["colored"],
+            "propagate": false
+        }
+    }
 }
 ```
-
-##### format
-
-You can replace format string with your own. There also support extra logging attributes in addition to [standard ones](https://docs.python.org/3/library/logging.html#logrecord-attributes)
-
-  * class - decorated with `logged_group` class name
-  * class_id - class id set by `class_id` argument passed into constructor
-
-```
-{
-  "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(class)15s:%(class_id)-8s %(message)s",
-  "colored": true,
-  ...
-}
-```
-
-##### colored
-
-Optional. Default - `false`. If set output well be colored
-
-##### propagation
-
-Optional. Default - `false`. If set log messages will be propagated into parent logger if that are exists
-
-##### logged_groups
-
-Each pair in this dict is definition of logging group and level related to it.
-So it gets possible to reduce logging level for classes related to this group and decorated with `@logged_group` in appropriate way in sources
-
 
 ## Using example
 
 ```python
-import threading
-
 from logged_groups import logged_group
 
 
@@ -78,6 +69,7 @@ class A:
 
     def __init__(self, **kws):
         self.info("Some information, keep focused on it")
+        self.c = C(class_id="SingleC")
 
     def do_stuff(self, value: int):
         try:
@@ -94,22 +86,26 @@ class A:
             self.warning(f"Value higher than 100, it can be wrong: {value}")
 
 
+@logged_group("log_group")
+class C:
+
+    def __init__(self, **kws):
+        self.info("C class construtor")
+
+
 @logged_group("other_log_group")
 class B:
-
     def __init__(self):
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.error("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
-        self.debug("Spam spam spam spam spam ")
+        for i in range(0, 10):
+            self.debug("Spam spam spam spam spam ")
+
+
+@logged_group("log_group")
+def check_logger(*, logger):
+    logger.info("Hoooray it's working!!!")
 
 
 if __name__ == "__main__":
-    threading.current_thread().name = "main"
     a1 = A(class_id="1")
     a1.do_stuff(100)
     a1.do_stuff(101)
@@ -121,4 +117,6 @@ if __name__ == "__main__":
     a2.do_stuff(100)
     a2.do_stuff(101)
     a2.do_stuff(1001)
+
+    check_logger()
 ```
