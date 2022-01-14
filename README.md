@@ -21,6 +21,18 @@ Then you can install package with the following:
 pip install dist/logged-groups-2.0.1.tar.gz
 ```
 
+or install it from pypi:
+
+```
+pip install logged-groups==2.0.1
+```
+
+or you can install it from git in your **requirements.txt**
+
+```
+git+https://github.com/rozhkovdmitrii/python-logged-groups.git@2.0.1
+```
+
 ## Config file
 
 There should be `log_cfg.json` in where you use `logged_groups` package. It's actually [standard configuration](https://docs.python.org/3/library/logging.config.html#configuration-functions) to be used with `logging.config.dictConfig`:
