@@ -78,6 +78,7 @@ def logged_group(logged_group: str):
             orig_init(self, *args, **kws)
 
         original_class.__init__ = __init__
+
         return original_class
 
     def function_wrapper(original_function):
