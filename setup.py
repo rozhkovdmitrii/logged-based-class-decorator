@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(name='logged-groups',
-      version='2.0.2.2',
+      version='2.0.2',
       description='Per class logging tools',
       author='Rozhkov Dmitrii',
       author_email='rozhkovdmitrii@yandex.ru',
