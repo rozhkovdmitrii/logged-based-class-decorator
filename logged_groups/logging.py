@@ -68,13 +68,12 @@ def logged_group(logged_group: str):
 
         def __init__(self, *args, **kws):
             self._class_id = kws.get("class_id", "")
-            self._logger = logging.LoggerAdapter(logger,
-                                                 {"class": original_class.__name__, "class_id": self._class_id})
-            self.debug = self._logger.debug
-            self.info = self._logger.info
-            self.error = self._logger.error
-            self.critical = self._logger.critical
-            self.warning = self._logger.warning
+            _logger = logging.LoggerAdapter(logger, {"class": original_class.__name__, "class_id": self._class_id})
+            self.debug = _logger.debug
+            self.info = _logger.info
+            self.error = _logger.error
+            self.critical = _logger.critical
+            self.warning = _logger.warning
 
             orig_init(self, *args, **kws)
 
