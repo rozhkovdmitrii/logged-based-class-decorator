@@ -4,24 +4,31 @@
         "colored": {
             "class": "logging.StreamHandler",
             "level": "DEBUG",
-            "formatter": "colored"
+            "formatter": "colored",
+            "filters": ["context_filter"]
+        }
+    },
+    "filters": {
+        "context_filter": {
+            "()": "logged_groups.logging.ContextFilter"
         }
     },
     "formatters": {
         "colored": {
-            "class": "logged_groups.ColoredFormatter",
-            "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(class)30s:%(class_id)-8s %(message)s",
-            "style": "%"
+            "()": "logged_groups.logging.ColoredFormatter",
+            "fmt_str": "%(asctime)23s %(threadName)10s %(levelname)8s %(context)s %(message)s"
         }
     },
     "loggers": {
         "log_group": {
             "level": "DEBUG",
             "handlers": ["colored"],
+            "filters": ["context_filter"],
             "propagate": false
         },
         "other_log_group": {
-            "level": "CRITICAL",
+            "filters": ["context_filter"],
+            "level": "DEBUG",
             "handlers": ["colored"],
             "propagate": false
         }

@@ -1,7 +1,11 @@
 import json
 import logging
 import logging.config
+import threading
 from types import FunctionType
+from typing import Dict, Deque
+from collections import deque
+from contextlib import contextmanager
 
 import singleton_decorator
 
@@ -32,11 +36,44 @@ class ColoredFormatter(logging.Formatter):
         return formatter.format(record)
 
 
+class LoggingContextHandler:
+    def __init__(self):
+        self.attributes: Deque[Dict[str, str]] = deque([{}])
+
+    def add(self, **new_context_vars) -> Dict[str, str]:
+        old_context = self.attributes[0]
+        new_context = {**old_context, **new_context_vars}
+        self.attributes.appendleft(new_context)
+        return new_context
+
+    def get(self, key):
+        return None if len(self.attributes) == 0 else self.attributes[0].get(key)
+
+    def get_ctx(self) -> Dict[str, str]:
+        return {} if len(self.attributes) == 0 else self.attributes[0]
+
+    def remove(self):
+        self.attributes.popleft()
+
+    def __str__(self):
+        return str(self.attributes)
+
+
 @singleton_decorator.singleton
 class LogMng:
 
     def __init__(self):
         self.is_init: bool = False
+        threading.get_ident()
+        self._logging_ctx: Dict[int, LoggingContextHandler] = dict()
+
+    def get_context_handler(self) -> LoggingContextHandler:
+        thread_id = threading.get_ident()
+        ctx_handler = self._logging_ctx.get(thread_id)
+        if ctx_handler is None:
+            self._logging_ctx.update({thread_id: LoggingContextHandler()})
+            ctx_handler = self._logging_ctx.get(thread_id)
+        return ctx_handler
 
     def init_from_file(self, log_cfg: str = "log_cfg.json"):
         try:
@@ -45,13 +82,50 @@ class LogMng:
             logging.getLogger().error(f"Failed to configure logged_groups package, file not found: {log_cfg}")
         except json.JSONDecodeError as e:
             logging.getLogger().error(f"Failed decode logged_groups package from {log_cfg}, error: {e}")
+        finally:
+            self.is_init = True
 
     def _init_from_file_impl(self, log_cfg: str):
         with open(log_cfg) as log_cfg_file:
             log_cfg_data = json.load(log_cfg_file)
             logging.config.dictConfig(log_cfg_data)
-        self.is_init = True
 
+#
+# class logging_context:
+#
+#     def __init__(self, **kwargs):
+#         self.log_mng = LogMng()
+#         self.kwargs = kwargs
+#
+#     def __enter__(self):
+#         self.logging_ctx_handler = self.log_mng.get_context_handler()
+#         self.logging_ctx = self.logging_ctx_handler.add(**self.kwargs)
+#
+#     def __exit__(self, exc_type, exc_val, exc_tb):
+#         self.logging_ctx_handler.remove()
+
+@contextmanager
+def logging_context(**kwargs):
+    log_mng = LogMng()
+    logging_ctx_handler = log_mng.get_context_handler()
+    logging_ctx = logging_ctx_handler.add(**kwargs)
+    try:
+        yield logging_ctx
+    finally:
+        logging_ctx_handler.remove()
+
+
+class ContextFilter(logging.Filter):
+    def __init__(self):
+        super(ContextFilter, self).__init__()
+
+    def filter(self, record):
+        log_mng: LogMng = LogMng()
+        log_ctx_handler = log_mng.get_context_handler()
+        log_ctx = log_ctx_handler.get_ctx()
+        record.context = str(log_ctx)
+        return True
+    
 
 def logged_group(logged_group: str):
     """Designed to provide methods: debug, info, warning, error and critical inside decorated class in logger_group"""
@@ -68,8 +142,7 @@ def logged_group(logged_group: str):
 
         def __init__(self, *args, **kws):
             self._class_id = kws.get("class_id", "")
-            self._logger = logging.LoggerAdapter(logger,
-                                                 {"class": original_class.__name__, "class_id": self._class_id})
+            self._logger = logging.LoggerAdapter(logger, {"class": original_class.__name__, "class_id": self._class_id})
             self.debug = self._logger.debug
             self.info = self._logger.info
             self.error = self._logger.error
