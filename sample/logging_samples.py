@@ -1,7 +1,7 @@
 from logged_groups import logged_group
 
 
-@logged_group("log_group")
+@logged_group("neon.a")
 class A:
 
     def __init__(self, **kws):
@@ -23,14 +23,14 @@ class A:
             self.warning(f"Value higher than 100, it can be wrong: {value}")
 
 
-@logged_group("log_group")
+@logged_group("neon.log_group")
 class C:
 
     def __init__(self, **kws):
         self.info("C class construtor")
 
 
-@logged_group("other_log_group")
+@logged_group("neon.spam_group")
 class B:
     def __init__(self):
         for i in range(0, 10):
