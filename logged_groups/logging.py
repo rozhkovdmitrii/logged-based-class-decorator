@@ -46,17 +46,11 @@ class LoggingContextHandler:
         self.attributes.appendleft(new_context)
         return new_context
 
-    def get(self, key):
-        return None if len(self.attributes) == 0 else self.attributes[0].get(key)
-
     def get_ctx(self) -> Dict[str, str]:
         return {} if len(self.attributes) == 0 else self.attributes[0]
 
     def remove(self):
         self.attributes.popleft()
-
-    def __str__(self):
-        return str(self.attributes)
 
 
 @singleton_decorator.singleton
@@ -90,19 +84,6 @@ class LogMng:
             log_cfg_data = json.load(log_cfg_file)
             logging.config.dictConfig(log_cfg_data)
 
-#
-# class logging_context:
-#
-#     def __init__(self, **kwargs):
-#         self.log_mng = LogMng()
-#         self.kwargs = kwargs
-#
-#     def __enter__(self):
-#         self.logging_ctx_handler = self.log_mng.get_context_handler()
-#         self.logging_ctx = self.logging_ctx_handler.add(**self.kwargs)
-#
-#     def __exit__(self, exc_type, exc_val, exc_tb):
-#         self.logging_ctx_handler.remove()
 
 @contextmanager
 def logging_context(**kwargs):
