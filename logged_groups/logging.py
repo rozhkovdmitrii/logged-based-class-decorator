@@ -60,8 +60,6 @@ def logged_group(logged_group: str):
         log_mng.init_from_file()
 
     logger = logging.getLogger(logged_group)
-    if len(logger.handlers) == 0:
-        logger.setLevel(logging.CRITICAL)
 
     def class_wrapper(original_class):
         orig_init = original_class.__init__

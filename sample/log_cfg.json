@@ -10,18 +10,18 @@
     "formatters": {
         "colored": {
             "class": "logged_groups.ColoredFormatter",
-            "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(class)30s:%(class_id)-8s %(message)s",
+            "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(name)20s:%(class)-30s %(message)s",
             "style": "%"
         }
     },
     "loggers": {
-        "log_group": {
+        "neon": {
             "level": "DEBUG",
             "handlers": ["colored"],
             "propagate": false
         },
-        "other_log_group": {
-            "level": "CRITICAL",
+        "root": {
+            "level": "DEBUG",
             "handlers": ["colored"],
             "propagate": false
         }

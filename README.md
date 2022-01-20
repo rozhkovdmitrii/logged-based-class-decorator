@@ -7,7 +7,7 @@ This package maintained on [python-logged-groups github repsitory](https://githu
 
 ## Build package
 
-To build package `dist/logged-groups-2.0.1.tar.gz`, for example, use following command:
+To build package `dist/logged-groups-2.0.3.tar.gz`, for example, use following command:
 
 ```
 python setup.py sdist
@@ -18,19 +18,19 @@ python setup.py sdist
 Then you can install package with the following:
 
 ```
-pip install dist/logged-groups-2.0.1.tar.gz
+pip install dist/logged-groups-2.0.3.tar.gz
 ```
 
 or install it from pypi:
 
 ```
-pip install logged-groups==2.0.1
+pip install logged-groups==2.0.3
 ```
 
 or you can install it from git in your **requirements.txt**
 
 ```
-git+https://github.com/rozhkovdmitrii/python-logged-groups.git@2.0.1
+git+https://github.com/rozhkovdmitrii/python-logged-groups.git@2.0.3
 ```
 
 ## Config file
@@ -51,18 +51,18 @@ As you can see there is using `logged_groups.ColoredFormatter` to provide colore
     "formatters": {
         "colored": {
             "class": "logged_groups.ColoredFormatter",
-            "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(class)30s:%(class_id)-8s %(message)s",
+            "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(name)20s:%(class)-30s %(message)s",
             "style": "%"
         }
     },
     "loggers": {
-        "log_group": {
-            "level": "WARNING",
+        "neon": {
+            "level": "DEBUG",
             "handlers": ["colored"],
             "propagate": false
         },
-        "other_log_group": {
-            "level": "CRITICAL",
+        "root": {
+            "level": "DEBUG",
             "handlers": ["colored"],
             "propagate": false
         }
@@ -76,7 +76,7 @@ As you can see there is using `logged_groups.ColoredFormatter` to provide colore
 from logged_groups import logged_group
 
 
-@logged_group("log_group")
+@logged_group("neon.a")
 class A:
 
     def __init__(self, **kws):
@@ -98,14 +98,14 @@ class A:
             self.warning(f"Value higher than 100, it can be wrong: {value}")
 
 
-@logged_group("log_group")
+@logged_group("neon.log_group")
 class C:
 
     def __init__(self, **kws):
         self.info("C class construtor")
 
 
-@logged_group("other_log_group")
+@logged_group("neon.spam_group")
 class B:
     def __init__(self):
         for i in range(0, 10):
