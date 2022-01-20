@@ -15,12 +15,13 @@
     },
     "formatters": {
         "colored": {
-            "()": "logged_groups.logging.ColoredFormatter",
-            "fmt_str": "%(asctime)23s %(threadName)10s %(levelname)8s %(context)s %(message)s"
+            "class": "logged_groups.ColoredFormatter",
+            "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(name)20s:%(class)-30s  %(context)s %(message)s",
+            "style": "%"
         }
     },
     "loggers": {
-        "log_group": {
+        "neon": {
             "level": "DEBUG",
             "handlers": ["colored"],
             "filters": ["context_filter"],

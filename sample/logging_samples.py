@@ -3,7 +3,7 @@ from logged_groups import logged_group, logging_context
 import time
 
 
-@logged_group("log_group")
+@logged_group("neon.a")
 class A:
 
     def __init__(self, **kws):
