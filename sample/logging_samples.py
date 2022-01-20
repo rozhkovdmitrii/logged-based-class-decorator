@@ -3,7 +3,7 @@ from logged_groups import logged_group, logging_context
 import time
 
 
-@logged_group("neon.a")
+@logged_group("neon.classes")
 class A:
 
     def __init__(self, **kws):
@@ -24,30 +24,30 @@ class A:
             self.warning(f"Value higher than 100, it can be wrong: {value}")
 
 
-@logged_group("other_log_group")
+@logged_group("classes")
 class B:
     def __init__(self):
-        for i in range(0, 10):
+        for i in range(0, 5):
             self.debug("Spam spam spam spam spam ")
 
 
-@logged_group("log_group")
+@logged_group("funcs")
 def check_logger(*, logger):
     logger.info("Hoooray it's working!!!")
 
 
-@logged_group("log_group")
+@logged_group("neon.funcs")
 def parallel(*, logger):
     a = A(class_id=33)
-    try:
-        with logging_context(user_id="Max", mode="threaded"):
-            for i in range(1, 20):
+    with logging_context(user_id="Max", mode="threaded"):
+        try:
+            for i in range(1, 10):
                 time.sleep(1)
                 a.do_stuff(i)
                 if i == 5:
                     raise Exception("Something wrong")
-    except Exception as e:
-        logger.error(f"Got exception: \"{e}\"")
+        except Exception as e:
+            logger.error(f"Got exception: \"{e}\"")
     a.do_stuff(777)
 
 

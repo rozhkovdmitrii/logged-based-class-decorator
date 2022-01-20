@@ -10,7 +10,7 @@
     },
     "filters": {
         "context_filter": {
-            "()": "logged_groups.logging.ContextFilter"
+            "()": "logged_groups.ContextFilter"
         }
     },
     "formatters": {
@@ -27,7 +27,7 @@
             "filters": ["context_filter"],
             "propagate": false
         },
-        "other_log_group": {
+        "root": {
             "filters": ["context_filter"],
             "level": "DEBUG",
             "handlers": ["colored"],
