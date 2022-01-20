@@ -2,6 +2,7 @@ import json
 import logging
 import logging.config
 import threading
+import signal
 from types import FunctionType
 from typing import Dict, Deque
 from collections import deque
@@ -60,6 +61,12 @@ class LogMng:
         self.is_init: bool = False
         threading.get_ident()
         self._logging_ctx: Dict[int, LoggingContextHandler] = dict()
+        self.enable_hot_config_reload()
+
+    def enable_hot_config_reload(self):
+        def hot_reload_method(signum, stack_frame):
+            self.init_from_file()
+        signal.signal(signal.SIGHUP, hot_reload_method)
 
     def get_context_handler(self) -> LoggingContextHandler:
         thread_id = threading.get_ident()
@@ -79,7 +86,8 @@ class LogMng:
         finally:
             self.is_init = True
 
-    def _init_from_file_impl(self, log_cfg: str):
+    @staticmethod
+    def _init_from_file_impl(log_cfg: str):
         with open(log_cfg) as log_cfg_file:
             log_cfg_data = json.load(log_cfg_file)
             logging.config.dictConfig(log_cfg_data)

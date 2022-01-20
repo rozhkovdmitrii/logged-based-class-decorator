@@ -104,6 +104,13 @@ with logging_context(ctx1="value", ctx2="other value"):
     # here the first logging context is back 
 ```
 
+## Hot reload
+
+The logging configuration can be reloaded on the fly by sending the SIGHUP signal to related python process
+
+```sh
+kill -SIGHUP $(pgrep python)
+```
 
 ## Sample
 
