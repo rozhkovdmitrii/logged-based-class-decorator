@@ -54,8 +54,29 @@ class LoggingContextHandler:
         self.attributes.popleft()
 
 
-@singleton_decorator.singleton
 class LogMng:
+
+    DEFAULT_LOG_CFG_FILE = "log_cfg.json"
+
+    @staticmethod
+    def get_logging_context():
+        return LogMngImpl().logging_context
+
+    @staticmethod
+    def init_from_file(log_cfg: str = DEFAULT_LOG_CFG_FILE):
+        return LogMngImpl().init_from_file(log_cfg)
+
+    @staticmethod
+    def is_init() -> bool:
+        return LogMngImpl().is_init
+
+    @staticmethod
+    def enable_hot_config_reload():
+        LogMngImpl().enable_hot_config_reload()
+
+
+@singleton_decorator.singleton
+class LogMngImpl:
 
     def __init__(self):
         self.is_init: bool = False
@@ -95,7 +116,7 @@ class LogMng:
 
 @contextmanager
 def logging_context(**kwargs):
-    log_mng = LogMng()
+    log_mng = LogMngImpl()
     logging_ctx_handler = log_mng.get_context_handler()
     logging_ctx = logging_ctx_handler.add(**kwargs)
     try:
@@ -109,7 +130,7 @@ class ContextFilter(logging.Filter):
         super(ContextFilter, self).__init__()
 
     def filter(self, record):
-        log_mng: LogMng = LogMng()
+        log_mng: LogMngImpl = LogMngImpl()
         log_ctx_handler = log_mng.get_context_handler()
         log_ctx = log_ctx_handler.get_ctx()
         record.context = str(log_ctx)
@@ -118,7 +139,7 @@ class ContextFilter(logging.Filter):
 
 def logged_group(logged_group: str):
     """Designed to provide methods: debug, info, warning, error and critical inside decorated class in logger_group"""
-    log_mng = LogMng()
+    log_mng = LogMngImpl()
     if not log_mng.is_init:
         log_mng.init_from_file()
 
