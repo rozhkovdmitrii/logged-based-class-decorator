@@ -86,7 +86,7 @@ As you can see there are some irregular things:
 
 `logged_group` decorator is designed to extend your classes and functions with a single logger that is not related to the name of module that is containing them.
 From now on it is possible to group logging notes, logged  classes and logged functions in any module with a single logging group and, as a consequence, with a single logger. 
-`logged_group` also extends a structure of logs with new logging attributes `class-name` and `class-id`.  
+`logged_group` also extends a structure of logs with new logging attributes `class` and `class-id`.  
 For each logger related to `logged_group` decorator you can set up different logging levels and others in configuration like for a standard logger. 
 
 
