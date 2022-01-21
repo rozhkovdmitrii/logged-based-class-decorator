@@ -60,7 +60,7 @@ class LogMng:
 
     @staticmethod
     def get_logging_context():
-        return LogMngImpl().logging_context
+        return LogMngImpl().get_context_handler().get_ctx()
 
     @staticmethod
     def init_from_file(log_cfg: str = DEFAULT_LOG_CFG_FILE):
