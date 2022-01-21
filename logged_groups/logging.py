@@ -80,7 +80,6 @@ class LogMngImpl:
 
     def __init__(self):
         self.is_init: bool = False
-        threading.get_ident()
         self._logging_ctx: Dict[int, LoggingContextHandler] = dict()
         self.enable_hot_config_reload()
 
@@ -130,10 +129,7 @@ class ContextFilter(logging.Filter):
         super(ContextFilter, self).__init__()
 
     def filter(self, record):
-        log_mng: LogMngImpl = LogMngImpl()
-        log_ctx_handler = log_mng.get_context_handler()
-        log_ctx = log_ctx_handler.get_ctx()
-        record.context = str(log_ctx)
+        record.context = str(LogMng.get_logging_context())
         return True
 
 

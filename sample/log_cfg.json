@@ -24,13 +24,11 @@
         "neon": {
             "level": "DEBUG",
             "handlers": ["colored"],
-            "filters": ["context_filter"],
             "propagate": false
         },
         "root": {
             "filters": ["context_filter"],
             "level": "DEBUG",
-            "handlers": ["colored"],
             "propagate": false
         }
     }

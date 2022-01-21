@@ -55,7 +55,7 @@ As you can see there are some irregular things:
     },
     "filters": {
         "context_filter": {
-            "()": "logged_groups.logging.ContextFilter"
+            "()": "logged_groups.ContextFilter"
         }
     },
     "formatters": {
@@ -69,13 +69,11 @@ As you can see there are some irregular things:
         "neon": {
             "level": "DEBUG",
             "handlers": ["colored"],
-            "filters": ["context_filter"],
             "propagate": false
         },
         "root": {
             "filters": ["context_filter"],
             "level": "DEBUG",
-            "handlers": ["colored"],
             "propagate": false
         }
     }
