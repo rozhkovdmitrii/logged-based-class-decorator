@@ -1,7 +1,12 @@
 import json
 import logging
 import logging.config
+import threading
+import signal
 from types import FunctionType
+from typing import Dict, Deque
+from collections import deque
+from contextlib import contextmanager
 
 import singleton_decorator
 
@@ -32,11 +37,64 @@ class ColoredFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-@singleton_decorator.singleton
+class LoggingContextHandler:
+    def __init__(self):
+        self.attributes: Deque[Dict[str, str]] = deque([{}])
+
+    def add(self, **new_context_vars) -> Dict[str, str]:
+        old_context = self.attributes[0]
+        new_context = {**old_context, **new_context_vars}
+        self.attributes.appendleft(new_context)
+        return new_context
+
+    def get_ctx(self) -> Dict[str, str]:
+        return {} if len(self.attributes) == 0 else self.attributes[0]
+
+    def remove(self):
+        self.attributes.popleft()
+
+
 class LogMng:
+
+    DEFAULT_LOG_CFG_FILE = "log_cfg.json"
+
+    @staticmethod
+    def get_logging_context():
+        return LogMngImpl().get_context_handler().get_ctx()
+
+    @staticmethod
+    def init_from_file(log_cfg: str = DEFAULT_LOG_CFG_FILE):
+        return LogMngImpl().init_from_file(log_cfg)
+
+    @staticmethod
+    def is_init() -> bool:
+        return LogMngImpl().is_init
+
+    @staticmethod
+    def enable_hot_config_reload():
+        LogMngImpl().enable_hot_config_reload()
+
+
+@singleton_decorator.singleton
+class LogMngImpl:
 
     def __init__(self):
         self.is_init: bool = False
+        self._logging_ctx: Dict[int, LoggingContextHandler] = dict()
+        self.enable_hot_config_reload()
+
+    def enable_hot_config_reload(self):
+        def hot_reload_method(signum, stack_frame):
+            self.init_from_file()
+        signal.signal(signal.SIGHUP, hot_reload_method)
+
+    def get_context_handler(self) -> LoggingContextHandler:
+        thread_id = threading.get_ident()
+        ctx_handler = self._logging_ctx.get(thread_id)
+        if ctx_handler is None:
+            self._logging_ctx.update({thread_id: LoggingContextHandler()})
+            ctx_handler = self._logging_ctx.get(thread_id)
+        return ctx_handler
 
     def init_from_file(self, log_cfg: str = "log_cfg.json"):
         try:
@@ -45,17 +103,39 @@ class LogMng:
             logging.getLogger().error(f"Failed to configure logged_groups package, file not found: {log_cfg}")
         except json.JSONDecodeError as e:
             logging.getLogger().error(f"Failed decode logged_groups package from {log_cfg}, error: {e}")
+        finally:
+            self.is_init = True
 
-    def _init_from_file_impl(self, log_cfg: str):
+    @staticmethod
+    def _init_from_file_impl(log_cfg: str):
         with open(log_cfg) as log_cfg_file:
             log_cfg_data = json.load(log_cfg_file)
             logging.config.dictConfig(log_cfg_data)
-        self.is_init = True
+
+
+@contextmanager
+def logging_context(**kwargs):
+    log_mng = LogMngImpl()
+    logging_ctx_handler = log_mng.get_context_handler()
+    logging_ctx = logging_ctx_handler.add(**kwargs)
+    try:
+        yield logging_ctx
+    finally:
+        logging_ctx_handler.remove()
+
+
+class ContextFilter(logging.Filter):
+    def __init__(self):
+        super(ContextFilter, self).__init__()
+
+    def filter(self, record):
+        record.context = str(LogMng.get_logging_context())
+        return True
 
 
 def logged_group(logged_group: str):
     """Designed to provide methods: debug, info, warning, error and critical inside decorated class in logger_group"""
-    log_mng = LogMng()
+    log_mng = LogMngImpl()
     if not log_mng.is_init:
         log_mng.init_from_file()
 
