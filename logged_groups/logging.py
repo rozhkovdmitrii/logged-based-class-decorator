@@ -129,7 +129,7 @@ class ContextFilter(logging.Filter):
         super(ContextFilter, self).__init__()
 
     def filter(self, record):
-        record.context = str(LogMng.get_logging_context())
+        record.context = json.dumps(LogMng.get_logging_context())
         return True
 
 

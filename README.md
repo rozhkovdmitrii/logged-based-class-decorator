@@ -7,7 +7,7 @@ This package maintained on [python-logged-groups github repsitory](https://githu
 
 ## Build package
 
-To build package `dist/logged-groups-2.1.2.tar.gz`, for example, use following command:
+To build package `dist/logged-groups-2.1.3.tar.gz`, for example, use following command:
 
 ```
 python setup.py sdist
@@ -18,19 +18,19 @@ python setup.py sdist
 Then you can install package with the following:
 
 ```
-pip install dist/logged-groups-2.1.2.tar.gz
+pip install dist/logged-groups-2.1.3.tar.gz
 ```
 
 or install it from pypi:
 
 ```
-pip install logged-groups==2.1.2
+pip install logged-groups==2.1.3
 ```
 
 or you can install it from git in your **requirements.txt**
 
 ```
-git+https://github.com/rozhkovdmitrii/python-logged-groups.git@2.1.2
+git+https://github.com/rozhkovdmitrii/python-logged-groups.git@2.1.3
 ```
 
 ## Config file
