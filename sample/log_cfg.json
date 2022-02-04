@@ -16,7 +16,7 @@
     "formatters": {
         "colored": {
             "class": "logged_groups.ColoredFormatter",
-            "format": "%(asctime)23s %(levelname)8s %(process)6d:%(threadName)-10s %(name)20s:%(class)-30s  %(context)s %(message)s",
+            "format": "%(asctime)23s %(levelname)8s %(process)6d %(name)20s:%(class)-30s  %(context)s %(message)s",
             "style": "%"
         }
     },
