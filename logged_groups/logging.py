@@ -129,7 +129,8 @@ class ContextFilter(logging.Filter):
         super(ContextFilter, self).__init__()
 
     def filter(self, record):
-        record.context = json.dumps(LogMng.get_logging_context())
+        if not hasattr(record, "context") or record.context is None:
+            record.context = json.dumps(LogMng.get_logging_context())
         return True
 
 
