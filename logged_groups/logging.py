@@ -138,7 +138,7 @@ class KeepExtraLoggingAdapter(logging.LoggerAdapter):
 
     def process(self, msg, kwargs):
         if self.extra is not None:
-            kwargs["extra"].update(self.extra)
+            kwargs.setdefault("extra", {}).update(self.extra)
         return msg, kwargs
 
 
