@@ -134,6 +134,14 @@ class ContextFilter(logging.Filter):
         return True
 
 
+class KeepExtraLoggingAdapter(logging.LoggerAdapter):
+
+    def process(self, msg, kwargs):
+        if self.extra is not None:
+            kwargs["extra"].update(self.extra)
+        return msg, kwargs
+
+
 def logged_group(logged_group: str):
     """Designed to provide methods: debug, info, warning, error and critical inside decorated class in logger_group"""
     log_mng = LogMngImpl()
@@ -147,7 +155,7 @@ def logged_group(logged_group: str):
 
         def __init__(self, *args, **kws):
             self._class_id = kws.get("class_id", "")
-            _logger = logging.LoggerAdapter(logger, {"class": self.__class__.__name__, "class_id": self._class_id})
+            _logger = KeepExtraLoggingAdapter(logger, {"class": self.__class__.__name__, "class_id": self._class_id})
             self.debug = _logger.debug
             self.info = _logger.info
             self.error = _logger.error
@@ -160,8 +168,8 @@ def logged_group(logged_group: str):
         return original_class
 
     def function_wrapper(original_function):
-        _logger = logging.LoggerAdapter(logging.getLogger(logged_group),
-                                        {"class": original_function.__name__, "class_id": ""})
+        _logger = KeepExtraLoggingAdapter(logging.getLogger(logged_group),
+                                          {"class": original_function.__name__, "class_id": ""})
 
         def inner_wrapper(*args, **kwargs):
             kwargs.update({"logger": _logger})
