@@ -3,6 +3,7 @@ import logging
 import logging.config
 import threading
 import signal
+import os
 from types import FunctionType
 from typing import Dict, Deque
 from collections import deque
@@ -56,7 +57,7 @@ class LoggingContextHandler:
 
 class LogMng:
 
-    DEFAULT_LOG_CFG_FILE = "log_cfg.json"
+    DEFAULT_LOG_CFG_FILE = os.getenv("LOG_CFG", "log_cfg.json")
 
     @staticmethod
     def get_logging_context():

@@ -80,6 +80,12 @@ As you can see there are some irregular things:
 }
 ```
 
+If you want to change the name of the configuration file, set the LOG_CFG variable with the name of the new file:
+
+```
+export LOG_CFG=custom_log_cfg.json
+```
+
 ## Logging group feature
 
 `logged_group` decorator is designed to extend your classes and functions with a single logger that is not related to the name of module that is containing them.
