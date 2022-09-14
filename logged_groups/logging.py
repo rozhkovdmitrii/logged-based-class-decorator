@@ -3,6 +3,7 @@ import logging
 import logging.config
 import threading
 import signal
+import os
 from types import FunctionType
 from typing import Dict, Deque
 from collections import deque
@@ -56,7 +57,7 @@ class LoggingContextHandler:
 
 class LogMng:
 
-    DEFAULT_LOG_CFG_FILE = "log_cfg.json"
+    DEFAULT_LOG_CFG_FILE = os.getenv("LOG_CFG", "log_cfg.json")
 
     @staticmethod
     def get_logging_context():
@@ -129,8 +130,17 @@ class ContextFilter(logging.Filter):
         super(ContextFilter, self).__init__()
 
     def filter(self, record):
-        record.context = json.dumps(LogMng.get_logging_context())
+        if not hasattr(record, "context") or record.context is None:
+            record.context = json.dumps(LogMng.get_logging_context())
         return True
+
+
+class KeepExtraLoggingAdapter(logging.LoggerAdapter):
+
+    def process(self, msg, kwargs):
+        if self.extra is not None:
+            kwargs.setdefault("extra", {}).update(self.extra)
+        return msg, kwargs
 
 
 def logged_group(logged_group: str):
@@ -146,7 +156,7 @@ def logged_group(logged_group: str):
 
         def __init__(self, *args, **kws):
             self._class_id = kws.get("class_id", "")
-            _logger = logging.LoggerAdapter(logger, {"class": self.__class__.__name__, "class_id": self._class_id})
+            _logger = KeepExtraLoggingAdapter(logger, {"class": self.__class__.__name__, "class_id": self._class_id})
             self.debug = _logger.debug
             self.info = _logger.info
             self.error = _logger.error
@@ -159,8 +169,8 @@ def logged_group(logged_group: str):
         return original_class
 
     def function_wrapper(original_function):
-        _logger = logging.LoggerAdapter(logging.getLogger(logged_group),
-                                        {"class": original_function.__name__, "class_id": ""})
+        _logger = KeepExtraLoggingAdapter(logging.getLogger(logged_group),
+                                          {"class": original_function.__name__, "class_id": ""})
 
         def inner_wrapper(*args, **kwargs):
             kwargs.update({"logger": _logger})
